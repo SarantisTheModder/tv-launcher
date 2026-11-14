@@ -1,0 +1,27 @@
+name: Build APK from Drive
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          pip install gdown
+          gdown "1udQNtbjW0Mi8Pm62R7ubtSf8l0ske7iJ" -O launcher.zip
+          unzip -q launcher.zip -d extracted
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: |
+          PROJECT_DIR=$(dirname $(find extracted -name "gradlew" | head -n 1))
+          cd "$PROJECT_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tv-launcher-apk
+          path: "**/build/outputs/apk/debug/*.apk"
+          
